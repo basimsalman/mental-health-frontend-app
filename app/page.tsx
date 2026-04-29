@@ -23,7 +23,7 @@ export default function Home() {
 
   const handleLogin = async () => {
     try {
-      await axios.post("https://mental-health-backend-h88t.onrender.com", {
+      await axios.post("https://mental-health-backend-h88t.onrender.com/login/", {
         username,
         password,
       });
