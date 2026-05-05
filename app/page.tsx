@@ -1,4 +1,4 @@
-"use client";
+use client";
 
 import { useRef, useState } from "react";
 import axios from "axios";
@@ -108,10 +108,16 @@ export default function Home() {
             Research Access
           </p>
 
-          <h1 className="text-3xl font-bold">Login</h1>
+          <h1 className="text-3xl font-bold">
+            AI-Based Psychological State System
+          </h1>
 
-          <p className="mt-2 text-sm text-slate-300">
-            Sign in to use the multimodal emotion risk screening prototype.
+          <p className="mt-2 text-sm font-medium text-slate-300">
+            Система ИИ-моделирования психологического состояния человека
+          </p>
+
+          <p className="mt-4 text-sm text-slate-400">
+            Sign in to use the research prototype.
           </p>
 
           <div className="mt-6 space-y-4">
@@ -157,13 +163,25 @@ export default function Home() {
               </p>
 
               <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-                Multimodal Emotion Risk Screening
+                AI-Based Model of the Human Psychological State System
               </h1>
+
+              <p className="mt-2 text-xl font-semibold text-white/90">
+                Система ИИ-моделирования психологического состояния человека
+              </p>
 
               <p className="mt-4 max-w-3xl text-lg text-white/90">
                 Upload audio, video, or image data to estimate interpretable
-                emotional indicators such as voice volume, speech rate, facial
-                activity, and movement signals.
+                indicators related to the human psychological state, including
+                voice volume, speech rate, facial activity, and movement
+                signals.
+              </p>
+
+              <p className="mt-3 max-w-3xl text-base text-white/80">
+                Загрузите аудио, видео или изображение для оценки
+                интерпретируемых показателей психологического состояния
+                человека, включая громкость голоса, скорость речи, мимику и
+                двигательные признаки.
               </p>
             </div>
 
@@ -179,9 +197,16 @@ export default function Home() {
         <section className="grid gap-8 lg:grid-cols-2">
           <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl">
             <h2 className="text-2xl font-semibold">Upload Media</h2>
+            <p className="mt-1 text-lg font-medium text-slate-300">
+              Загрузка медиафайла
+            </p>
 
-            <p className="mt-2 text-sm text-slate-300">
+            <p className="mt-3 text-sm text-slate-300">
               Supported files: audio, image, and video.
+            </p>
+
+            <p className="mt-1 text-sm text-slate-400">
+              Поддерживаемые файлы: аудио, изображение и видео.
             </p>
 
             <input
@@ -197,41 +222,52 @@ export default function Home() {
                 onClick={handleSelectFile}
                 className="rounded-xl bg-indigo-500 px-5 py-3 font-semibold text-white transition hover:bg-indigo-400"
               >
-                Select File
+                Select File / Выбрать файл
               </button>
 
               <button
                 onClick={handleUpload}
                 className="rounded-xl bg-emerald-500 px-5 py-3 font-semibold text-white transition hover:bg-emerald-400"
               >
-                Upload & Analyze
+                Upload & Analyze / Анализировать
               </button>
             </div>
 
             <div className="mt-6 rounded-2xl border border-dashed border-white/15 bg-slate-900/60 p-4">
-              <p className="text-sm text-slate-300">Selected file</p>
-              <p className="mt-2 break-all font-medium">
-                {file ? file.name : "No file selected"}
+              <p className="text-sm text-slate-300">
+                Selected file / Выбранный файл
               </p>
+
+              <p className="mt-2 break-all font-medium">
+                {file ? file.name : "No file selected / Файл не выбран"}
+              </p>
+
               {file && (
                 <p className="mt-2 text-sm text-slate-400">
-                  Type: {file.type || "unknown"}
+                  Type / Тип: {file.type || "unknown"}
                 </p>
               )}
             </div>
 
             {loading && (
               <div className="mt-6 rounded-2xl border border-indigo-400/30 bg-indigo-500/10 p-4 text-indigo-200">
-                Processing media...
+                Processing media... / Обработка медиафайла...
               </div>
             )}
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl">
             <h2 className="text-2xl font-semibold">Preview</h2>
+            <p className="mt-1 text-lg font-medium text-slate-300">
+              Предварительный просмотр
+            </p>
 
             <div className="mt-6 rounded-2xl border border-white/10 bg-slate-900/60 p-4">
-              {!file && <p className="text-slate-400">No preview available.</p>}
+              {!file && (
+                <p className="text-slate-400">
+                  No preview available. / Предварительный просмотр недоступен.
+                </p>
+              )}
 
               {file?.type.startsWith("image/") && (
                 <img
@@ -261,7 +297,10 @@ export default function Home() {
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
                 <h2 className="text-2xl font-semibold">Analysis Result</h2>
-                <p className="text-sm text-emerald-100/80">
+                <p className="mt-1 text-lg font-medium text-emerald-100/80">
+                  Результат анализа
+                </p>
+                <p className="mt-1 text-sm text-emerald-100/80">
                   Research output only. Not a diagnosis.
                 </p>
               </div>
@@ -270,19 +309,27 @@ export default function Home() {
             </div>
 
             <div className="mt-6 grid gap-4 md:grid-cols-4">
-              <ResultCard title="Risk Score" value={result.risk_score} />
-              <ResultCard title="Risk Level" value={result.risk_level} />
-              <ResultCard title="Confidence" value={result.confidence} />
-              <ResultCard title="Modality" value={result.modality} />
+              <ResultCard title="Risk Score / Оценка риска" value={result.risk_score} />
+              <ResultCard title="Risk Level / Уровень риска" value={result.risk_level} />
+              <ResultCard title="Confidence / Уверенность" value={result.confidence} />
+              <ResultCard title="Modality / Тип данных" value={result.modality} />
             </div>
 
             <div className="mt-6 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
-              <h3 className="text-lg font-semibold">Estimated Emotional State</h3>
-              <p className="mt-2 text-slate-200">{result.emotion_state}</p>
+              <h3 className="text-lg font-semibold">
+                Estimated Psychological State
+              </h3>
+              <p className="mt-1 text-sm text-slate-400">
+                Оценочное психологическое состояние
+              </p>
+              <p className="mt-3 text-slate-200">{result.emotion_state}</p>
             </div>
 
             <div className="mt-6 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
               <h3 className="text-lg font-semibold">Measured Features</h3>
+              <p className="mt-1 text-sm text-slate-400">
+                Измеряемые признаки
+              </p>
 
               <div className="mt-4 grid gap-3 md:grid-cols-2">
                 {Object.entries(result.features).map(([key, value]) => (
@@ -300,7 +347,9 @@ export default function Home() {
             </div>
 
             <div className="mt-6">
-              <p className="mb-2 text-sm text-slate-300">Risk Score</p>
+              <p className="mb-2 text-sm text-slate-300">
+                Risk Score / Оценка риска
+              </p>
               <div className="h-4 overflow-hidden rounded-full bg-slate-800">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-green-400 via-yellow-400 to-red-500"
@@ -310,7 +359,9 @@ export default function Home() {
             </div>
 
             <div className="mt-6">
-              <p className="mb-2 text-sm text-slate-300">Confidence</p>
+              <p className="mb-2 text-sm text-slate-300">
+                Confidence / Уверенность
+              </p>
               <div className="h-4 overflow-hidden rounded-full bg-slate-800">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-red-400 via-yellow-400 to-emerald-500"
@@ -320,8 +371,14 @@ export default function Home() {
             </div>
 
             <p className="mt-6 text-sm text-slate-200">{result.detail}</p>
+
             <p className="mt-3 text-sm font-semibold text-yellow-200">
               {result.disclaimer}
+            </p>
+
+            <p className="mt-1 text-sm font-semibold text-yellow-200">
+              Только для исследовательских целей. Не является медицинским
+              диагнозом.
             </p>
           </section>
         )}
@@ -355,7 +412,7 @@ function RiskBadge({ level }: { level: string }) {
 
   return (
     <div className={`rounded-full border px-5 py-2 font-semibold ${styles}`}>
-      {level} Risk
+      {level} Risk / Уровень риска
     </div>
   );
 }
