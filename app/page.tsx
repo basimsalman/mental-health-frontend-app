@@ -3,11 +3,17 @@
 import { useRef, useState } from "react";
 import axios from "axios";
 
+const API_BASE_URL = "https://mental-health-backend-h88t.onrender.com";
+
 type AnalysisResult = {
-  risk_score: number;
-  confidence: number;
   modality: string;
+  risk_score: number;
+  risk_level: string;
+  confidence: number;
+  emotion_state: string;
+  features: Record<string, string | number>;
   detail: string;
+  disclaimer: string;
 };
 
 export default function Home() {
@@ -18,12 +24,13 @@ export default function Home() {
   const [loggedIn, setLoggedIn] = useState(false);
 
   const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
 
   const handleLogin = async () => {
     try {
-      await axios.post("https://mental-health-backend-h88t.onrender.com/login/", {
+      await axios.post(`${API_BASE_URL}/login/`, {
         username,
         password,
       });
@@ -34,7 +41,7 @@ export default function Home() {
     }
   };
 
-  const handleSelectClick = () => {
+  const handleSelectFile = () => {
     fileInputRef.current?.click();
   };
 
@@ -42,48 +49,69 @@ export default function Home() {
     const selectedFile = event.target.files?.[0] || null;
     setFile(selectedFile);
     setResult(null);
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    if (selectedFile) {
+      setPreviewUrl(URL.createObjectURL(selectedFile));
+    } else {
+      setPreviewUrl("");
+    }
   };
 
   const handleUpload = async () => {
     if (!file) {
-      alert("Please select a file first");
+      alert("Please select audio, image, or video first.");
       return;
     }
 
-    const data = new FormData();
-    data.append("file", file);
+    const formData = new FormData();
+    formData.append("file", file);
 
     setLoading(true);
     setResult(null);
 
     try {
-      const response = await axios.post(
-        "http://localhost:8000/analyze-media/",
-        data,
+      const response = await axios.post<AnalysisResult>(
+        `${API_BASE_URL}/analyze-media/`,
+        formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
 
       setResult(response.data);
-    } catch {
-      alert("Upload failed");
+    } catch (error) {
+      console.error(error);
+      alert("Upload failed. Please check backend connection.");
     } finally {
       setLoading(false);
     }
   };
 
+  const logout = () => {
+    setLoggedIn(false);
+    setUsername("");
+    setPassword("");
+    setFile(null);
+    setPreviewUrl("");
+    setResult(null);
+  };
+
   if (!loggedIn) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-white">
-        <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl">
+        <section className="w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl">
           <p className="mb-3 inline-block rounded-full bg-indigo-500/20 px-3 py-1 text-sm text-indigo-200">
-            Secure Research Access
+            Research Access
           </p>
 
           <h1 className="text-3xl font-bold">Login</h1>
+
           <p className="mt-2 text-sm text-slate-300">
-            Please login to use the multimodal screening prototype.
+            Sign in to use the multimodal emotion risk screening prototype.
           </p>
 
           <div className="mt-6 space-y-4">
@@ -111,114 +139,189 @@ export default function Home() {
           </div>
 
           <p className="mt-5 text-xs text-slate-400">
-            Research use only. Not for medical diagnosis.
+            Demo login: aqeel / 1234
           </p>
-        </div>
+        </section>
       </main>
     );
   }
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <div className="mx-auto max-w-5xl px-6 py-10">
-        <div className="mb-8 rounded-3xl border border-white/10 bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 p-8 shadow-2xl">
-          <p className="mb-3 inline-block rounded-full bg-white/20 px-3 py-1 text-sm font-medium">
-            PhD Research Prototype
-          </p>
+      <div className="mx-auto max-w-6xl px-6 py-10">
+        <header className="mb-8 rounded-3xl border border-white/10 bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 p-8 shadow-2xl">
+          <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+            <div>
+              <p className="mb-3 inline-block rounded-full bg-white/20 px-3 py-1 text-sm font-medium">
+                PhD Research Prototype
+              </p>
 
-          <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-            Multimodal Risk Screening Platform
-          </h1>
+              <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+                Multimodal Emotion Risk Screening
+              </h1>
 
-          <p className="mt-4 max-w-3xl text-lg text-white/90">
-            Upload an audio, video, or image file to estimate research risk
-            indicators. This tool is for academic research only and is not a
-            medical diagnosis.
-          </p>
-
-          <button
-            onClick={() => {
-              setLoggedIn(false);
-              setUsername("");
-              setPassword("");
-              setFile(null);
-              setResult(null);
-            }}
-            className="mt-6 rounded-xl bg-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/30"
-          >
-            Logout
-          </button>
-        </div>
-
-        <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl">
-          <h2 className="mb-2 text-2xl font-semibold">Upload Media</h2>
-
-          <p className="mb-6 text-sm text-slate-300">
-            Supported types: audio, video, image
-          </p>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="audio/*,video/*,image/*"
-            onChange={handleFileChange}
-            className="hidden"
-          />
-
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <button
-              onClick={handleSelectClick}
-              className="rounded-xl bg-indigo-500 px-5 py-3 font-semibold text-white transition hover:bg-indigo-400"
-            >
-              Select File
-            </button>
+              <p className="mt-4 max-w-3xl text-lg text-white/90">
+                Upload audio, video, or image data to estimate interpretable
+                emotional indicators such as voice volume, speech rate, facial
+                activity, and movement signals.
+              </p>
+            </div>
 
             <button
-              onClick={handleUpload}
-              className="rounded-xl bg-emerald-500 px-5 py-3 font-semibold text-white transition hover:bg-emerald-400"
+              onClick={logout}
+              className="rounded-xl bg-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/30"
             >
-              Upload & Analyze
+              Logout
             </button>
           </div>
+        </header>
 
-          <div className="mt-6 rounded-2xl border border-dashed border-white/15 bg-slate-900/60 p-4">
-            <p className="text-sm text-slate-300">Selected file</p>
-            <p className="mt-2 break-all text-base font-medium text-white">
-              {file ? file.name : "No file selected yet"}
+        <section className="grid gap-8 lg:grid-cols-2">
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl">
+            <h2 className="text-2xl font-semibold">Upload Media</h2>
+
+            <p className="mt-2 text-sm text-slate-300">
+              Supported files: audio, image, and video.
             </p>
 
-            {file && (
-              <p className="mt-2 text-sm text-slate-400">
-                Type: {file.type || "unknown"}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="audio/*,image/*,video/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <button
+                onClick={handleSelectFile}
+                className="rounded-xl bg-indigo-500 px-5 py-3 font-semibold text-white transition hover:bg-indigo-400"
+              >
+                Select File
+              </button>
+
+              <button
+                onClick={handleUpload}
+                className="rounded-xl bg-emerald-500 px-5 py-3 font-semibold text-white transition hover:bg-emerald-400"
+              >
+                Upload & Analyze
+              </button>
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-dashed border-white/15 bg-slate-900/60 p-4">
+              <p className="text-sm text-slate-300">Selected file</p>
+              <p className="mt-2 break-all font-medium">
+                {file ? file.name : "No file selected"}
               </p>
+              {file && (
+                <p className="mt-2 text-sm text-slate-400">
+                  Type: {file.type || "unknown"}
+                </p>
+              )}
+            </div>
+
+            {loading && (
+              <div className="mt-6 rounded-2xl border border-indigo-400/30 bg-indigo-500/10 p-4 text-indigo-200">
+                Processing media...
+              </div>
             )}
           </div>
 
-          {loading && (
-            <div className="mt-6 rounded-2xl border border-indigo-400/30 bg-indigo-500/10 p-4 text-indigo-200">
-              Processing your media...
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl">
+            <h2 className="text-2xl font-semibold">Preview</h2>
+
+            <div className="mt-6 rounded-2xl border border-white/10 bg-slate-900/60 p-4">
+              {!file && <p className="text-slate-400">No preview available.</p>}
+
+              {file?.type.startsWith("image/") && (
+                <img
+                  src={previewUrl}
+                  alt="Selected preview"
+                  className="max-h-80 w-full rounded-xl object-contain"
+                />
+              )}
+
+              {file?.type.startsWith("audio/") && (
+                <audio controls src={previewUrl} className="w-full" />
+              )}
+
+              {file?.type.startsWith("video/") && (
+                <video
+                  controls
+                  src={previewUrl}
+                  className="max-h-80 w-full rounded-xl"
+                />
+              )}
             </div>
-          )}
+          </div>
         </section>
 
         {result && (
           <section className="mt-8 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6 shadow-xl">
-            <h2 className="text-2xl font-semibold">Analysis Result</h2>
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h2 className="text-2xl font-semibold">Analysis Result</h2>
+                <p className="text-sm text-emerald-100/80">
+                  Research output only. Not a diagnosis.
+                </p>
+              </div>
 
-            <div className="mt-4 grid gap-4 md:grid-cols-3">
+              <RiskBadge level={result.risk_level} />
+            </div>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-4">
               <ResultCard title="Risk Score" value={result.risk_score} />
+              <ResultCard title="Risk Level" value={result.risk_level} />
               <ResultCard title="Confidence" value={result.confidence} />
               <ResultCard title="Modality" value={result.modality} />
             </div>
 
-            <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-              <p className="text-sm text-slate-300">Detail</p>
-              <p className="mt-2 text-white">{result.detail}</p>
+            <div className="mt-6 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
+              <h3 className="text-lg font-semibold">Estimated Emotional State</h3>
+              <p className="mt-2 text-slate-200">{result.emotion_state}</p>
             </div>
 
-            <p className="mt-6 text-sm text-slate-200">
-              This tool is for academic research use only and does not provide
-              diagnosis, treatment advice, or emergency support.
+            <div className="mt-6 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
+              <h3 className="text-lg font-semibold">Measured Features</h3>
+
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                {Object.entries(result.features).map(([key, value]) => (
+                  <div
+                    key={key}
+                    className="rounded-xl border border-white/10 bg-white/5 p-3"
+                  >
+                    <p className="text-sm text-slate-400">
+                      {key.replaceAll("_", " ")}
+                    </p>
+                    <p className="mt-1 text-lg font-semibold">{value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <p className="mb-2 text-sm text-slate-300">Risk Score</p>
+              <div className="h-4 overflow-hidden rounded-full bg-slate-800">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-green-400 via-yellow-400 to-red-500"
+                  style={{ width: `${Math.max(5, result.risk_score * 100)}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <p className="mb-2 text-sm text-slate-300">Confidence</p>
+              <div className="h-4 overflow-hidden rounded-full bg-slate-800">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-red-400 via-yellow-400 to-emerald-500"
+                  style={{ width: `${Math.max(5, result.confidence * 100)}%` }}
+                />
+              </div>
+            </div>
+
+            <p className="mt-6 text-sm text-slate-200">{result.detail}</p>
+            <p className="mt-3 text-sm font-semibold text-yellow-200">
+              {result.disclaimer}
             </p>
           </section>
         )}
@@ -227,16 +330,32 @@ export default function Home() {
   );
 }
 
-type ResultCardProps = {
+function ResultCard({
+  title,
+  value,
+}: {
   title: string;
   value: string | number;
-};
-
-function ResultCard({ title, value }: ResultCardProps) {
+}) {
   return (
     <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
       <p className="text-sm text-slate-300">{title}</p>
-      <p className="mt-2 text-2xl font-bold text-white">{value}</p>
+      <p className="mt-2 text-2xl font-bold">{value}</p>
+    </div>
+  );
+}
+
+function RiskBadge({ level }: { level: string }) {
+  const styles =
+    level === "High"
+      ? "border-red-400/30 bg-red-500/20 text-red-200"
+      : level === "Moderate"
+      ? "border-yellow-400/30 bg-yellow-500/20 text-yellow-200"
+      : "border-green-400/30 bg-green-500/20 text-green-200";
+
+  return (
+    <div className={`rounded-full border px-5 py-2 font-semibold ${styles}`}>
+      {level} Risk
     </div>
   );
 }
