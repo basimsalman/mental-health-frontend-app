@@ -1,4 +1,4 @@
-use client";
+"use client";
 
 import { useRef, useState } from "react";
 import axios from "axios";
@@ -415,10 +415,4 @@ function RiskBadge({ level }: { level: string }) {
       {level} Risk / Уровень риска
     </div>
   );
-}/ /  
- f o r c e  
- u p d a t e  
- / /  
- f o r c e  
- u p d a t e  
- 
+}
