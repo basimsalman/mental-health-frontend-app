@@ -415,4 +415,7 @@ function RiskBadge({ level }: { level: string }) {
       {level} Risk / Уровень риска
     </div>
   );
-}
+}/ /  
+ f o r c e  
+ u p d a t e  
+ 
